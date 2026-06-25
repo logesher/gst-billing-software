@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Customers - GST Billing{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Customers</h2>
+        <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">+ Add Customer</a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>GSTIN</th>
+                <th>State</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in customers.items %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ c.name }}</td>
+                <td>{{ c.gstin }}</td>
+                <td>{{ c.state }}</td>
+                <td>{{ c.address }}</td>
+                <td>
+                    <a href="{{ url_for('main.customer_edit', id=c.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="{{ url_for('main.customer_delete', id=c.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this customer?')">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">No customers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="name" placeholder="Customer Name" class="form-control mb-2" required>
+        <input type="text" name="gstin" placeholder="GSTIN" class="form-control mb-2">
+        <input type="text" name="state" placeholder="State" class="form-control mb-2">
+        <input type="text" name="address" placeholder="Address" class="form-control mb-2">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

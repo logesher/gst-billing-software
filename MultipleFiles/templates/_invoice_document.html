@@ -1,0 +1,241 @@
+<section class="invoice-print">
+    <div class="invoice-paper">
+        <div class="invoice-title-row">
+            <div class="invoice-title">Tax Invoice</div>
+            <div></div>
+        </div>
+
+        <table class="invoice-grid">
+            <tr>
+                <td class="seller-block" rowspan="5">
+                    <div class="party-label party-strong">{{ seller.name }}</div>
+                    <div>{{ seller.address }}</div>
+                    <div>{{ seller.city }}</div>
+                    <div>GSTIN/UIN: {{ seller.gstin or '-' }}</div>
+                    <div>State Name : {{ seller.state or '-' }}, Code : {{ seller.state_code or '33' }}</div>
+                    {% if seller.phone %}<div>Mobile: {{ seller.phone }}</div>{% endif %}
+                    {% if seller.email %}<div>Email: {{ seller.email }}</div>{% endif %}
+
+                    <div class="party-section">
+                        <div class="party-label">Bill to</div>
+                        <div class="party-strong">{{ invoice.customer.name }}</div>
+                        <div>{{ invoice.customer.address or '-' }}</div>
+                        <div>GSTIN/UIN : {{ invoice.customer.gstin or '-' }}</div>
+                        <div>State Name : {{ invoice.customer.state or '-' }}, Code : {{ customer_state_code or '33' }}</div>
+                    </div>
+                </td>
+                <td class="meta-box">
+                    <div class="box-label">Invoice No.</div>
+                    <div class="box-value">{{ invoice.invoice_number }}</div>
+                </td>
+                <td class="meta-box">
+                    <div class="box-label">Dated</div>
+                    <div class="box-value">{{ invoice.date.strftime('%d-%b-%y') }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="meta-box">
+                    <div class="box-label">PO No.</div>
+                    <div class="box-value">{{ invoice.po_number or '-' }}</div>
+                </td>
+                <td class="meta-box"><div class="box-label">Mode/Terms of Payment</div></td>
+            </tr>
+            <tr>
+                <td class="meta-box">
+                    <div class="box-label">Reference No. & Date.</div>
+                    <div class="box-value">
+                        {% if invoice.reference_number or invoice.reference_date %}
+                            {{ invoice.reference_number or '-' }}
+                            {% if invoice.reference_date %} / {{ invoice.reference_date.strftime('%d-%b-%y') }}{% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="meta-box">
+                    <div class="box-label">Other References</div>
+                    <div class="box-value">{{ invoice.other_references or '-' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="meta-box"><div class="box-label">Buyer's Order No.</div></td>
+                <td class="meta-box"><div class="box-label">Dated</div></td>
+            </tr>
+            <tr>
+                <td class="meta-box"><div class="box-label">Dispatch Doc No.</div></td>
+                <td class="meta-box"><div class="box-label">Delivery Note Date</div></td>
+            </tr>
+            <tr>
+                <td class="meta-box"><div class="box-label">Dispatched through</div></td>
+                <td class="meta-box"><div class="box-label">Destination</div></td>
+            </tr>
+        </table>
+
+        <table class="invoice-grid items-grid">
+            <thead>
+                <tr>
+                    <th class="w-sl">Sl No.</th>
+                    <th class="w-desc">Description of Goods</th>
+                    <th class="w-hsn">HSN/SAC</th>
+                    <th class="w-qty">Quantity</th>
+                    <th class="w-rate">Rate</th>
+                    <th class="w-unit">per</th>
+                    <th class="w-amount">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set ns = namespace(has_cgst=false, has_sgst=false, has_igst=false) %}
+                {% for item in invoice.items %}
+                    {% if item.cgst_rate %}{% set ns.has_cgst = true %}{% endif %}
+                    {% if item.sgst_rate %}{% set ns.has_sgst = true %}{% endif %}
+                    {% if item.igst_rate %}{% set ns.has_igst = true %}{% endif %}
+                {% endfor %}
+                {% for item in invoice.items %}
+                <tr class="item-row">
+                    <td>{{ loop.index }}</td>
+                    <td class="desc-cell">
+                        <div class="item-title">{{ item.description }}</div>
+                    </td>
+                    <td>{{ item.hsn_code or '-' }}</td>
+                    <td class="text-end">{{ '%.2f'|format(item.quantity) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(item.rate) }}</td>
+                    <td>{{ item.unit or 'Nos' }}</td>
+                    <td class="text-end amount-cell">
+                        <div>{{ '%.2f'|format(item.item_subtotal or 0) }}</div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No items found for this invoice.</td>
+                </tr>
+                {% endfor %}
+                {% if invoice.items %}
+                <tr class="tax-label-row">
+                    <td></td>
+                    <td class="desc-cell tax-label-cell">
+                        <div class="tax-split">
+                            {% if ns.has_igst %}
+                            <div>IGST {{ '%.2f'|format(invoice.items[0].igst_rate or 0) }}%</div>
+                            {% else %}
+                            {% if ns.has_cgst %}<div>CGST {{ '%.2f'|format(invoice.items[0].cgst_rate or 0) }}%</div>{% endif %}
+                            {% if ns.has_sgst %}<div>SGST {{ '%.2f'|format(invoice.items[0].sgst_rate or 0) }}%</div>{% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-end amount-cell">
+                        {% if ns.has_igst %}
+                        <div>{{ '%.2f'|format(invoice.igst_amount or 0) }}</div>
+                        {% else %}
+                        {% if ns.has_cgst %}<div>{{ '%.2f'|format(invoice.cgst_amount or 0) }}</div>{% endif %}
+                        {% if ns.has_sgst %}<div>{{ '%.2f'|format(invoice.sgst_amount or 0) }}</div>{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                <tr class="total-row">
+                    <td></td>
+                    <td class="text-end">Total</td>
+                    <td></td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.items|sum(attribute='quantity')) }}</td>
+                    <td></td>
+                    <td>{{ invoice.items[0].unit if invoice.items|length == 1 else '' }}</td>
+                    <td class="text-end"><strong>{{ '%.2f'|format(invoice.subtotal_amount or 0) }}</strong></td>
+                </tr>
+                <tr class="grand-total-row">
+                    <td></td>
+                    <td class="text-end">Grand Total</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-end"><strong>{{ '%.2f'|format(invoice.grand_total or 0) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="invoice-grid words-grid">
+            <tr>
+                <td>
+                    <div class="box-label">Amount Chargeable (in words)</div>
+                    <div class="words-value">{{ amount_in_words }}</div>
+                </td>
+                <td class="eoe-cell">E. & O.E</td>
+            </tr>
+        </table>
+
+        <table class="invoice-grid tax-summary-grid">
+            <thead>
+                <tr>
+                    <th rowspan="2">HSN/SAC</th>
+                    <th rowspan="2">Taxable Value</th>
+                    <th colspan="2">Central Tax</th>
+                    <th colspan="2">State Tax</th>
+                    <th colspan="2">Integrated Tax</th>
+                    <th rowspan="2">Total Tax Amount</th>
+                </tr>
+                <tr>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in tax_rows %}
+                <tr>
+                    <td>{{ row.hsn_code }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.taxable_value) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.cgst_rate) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.cgst_amount) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.sgst_rate) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.sgst_amount) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.igst_rate) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.igst_amount) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(row.total_tax_amount) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center">No tax rows available.</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td class="text-end">Total</td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.subtotal_amount or 0) }}</td>
+                    <td></td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.cgst_amount or 0) }}</td>
+                    <td></td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.sgst_amount or 0) }}</td>
+                    <td></td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.igst_amount or 0) }}</td>
+                    <td class="text-end">{{ '%.2f'|format(invoice.total_tax or 0) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tax-words-line">
+            <span>Tax Amount (in words) :</span>
+            <strong>{{ tax_amount_in_words }}</strong>
+        </div>
+
+        <table class="invoice-grid declaration-grid">
+            <tr>
+                <td class="declaration-cell">
+                    <div class="box-label">Declaration</div>
+                    <div>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</div>
+                </td>
+                <td class="signatory-cell">
+                    <div class="party-strong">for {{ seller.name }}</div>
+                    <div class="signature-spacer"></div>
+                    <div>Authorised Signatory</div>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</section>

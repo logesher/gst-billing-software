@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Owners - GST Billing{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Owners</h2>
+    <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addOwnerModal">+ Add Owner</a>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>GSTIN</th>
+            <th>Mobile</th>
+            <th>State</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for owner in owners.items %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ owner.name }}</td>
+            <td>{{ owner.gstin }}</td>
+            <td>{{ owner.phone or '-' }}</td>
+            <td>{{ owner.state }}</td>
+            <td>{{ owner.address }}</td>
+            <td>
+                <a href="{{ url_for('main.owner_edit', id=owner.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{{ url_for('main.owner_delete', id=owner.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this owner?')">Delete</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7" class="text-center text-muted py-4">No owners found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="modal fade" id="addOwnerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Owner</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="name" placeholder="Owner Name" class="form-control mb-2" required>
+        <input type="text" name="gstin" placeholder="GSTIN" class="form-control mb-2">
+        <input type="text" name="phone" placeholder="Mobile Number" class="form-control mb-2">
+        <input type="text" name="state" placeholder="State" class="form-control mb-2" required>
+        <input type="text" name="address" placeholder="Address" class="form-control mb-2">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

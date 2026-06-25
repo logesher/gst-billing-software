@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Edit Owner - GST Billing{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Edit Owner</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Owner Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ owner.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">GSTIN</label>
+                        <input type="text" name="gstin" class="form-control" value="{{ owner.gstin or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Number</label>
+                        <input type="text" name="phone" class="form-control" value="{{ owner.phone or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" name="state" class="form-control" value="{{ owner.state }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3">{{ owner.address or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Update Owner</button>
+                    <a href="{{ url_for('main.owner_list') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

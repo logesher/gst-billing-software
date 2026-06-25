@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Reports - GST Billing{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="mb-1">Monthly Reports</h2>
+        <div class="text-muted">Choose an owner, month, and year to generate the corresponding sales report.</div>
+    </div>
+    {% if report %}
+    <a href="{{ url_for('main.reports_pdf', month=report.month, year=report.year, owner_id=report.selected_owner.id if report.selected_owner else '') }}" class="btn btn-success">
+        <i class="bi bi-download"></i> Download PDF
+    </a>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('main.reports') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Owner</label>
+                <select name="owner_id" class="form-select" required>
+                    <option value="">Select Owner</option>
+                    {% for owner in owners %}
+                    <option value="{{ owner.id }}" {{ 'selected' if selected_owner_id == owner.id }}>{{ owner.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select" required>
+                    {% for month_number, month_name in months %}
+                    <option value="{{ month_number }}" {{ 'selected' if selected_month == month_number }}>{{ month_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <input type="number" name="year" class="form-control" min="2000" max="2100" value="{{ selected_year }}" required>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-bar-chart"></i> Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if report %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary h-100">
+            <div class="card-body">
+                <div class="small">Invoices</div>
+                <div class="fs-3 fw-bold">{{ report.summary.invoice_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success h-100">
+            <div class="card-body">
+                <div class="small">Grand Total</div>
+                <div class="fs-3 fw-bold">₹{{ "%.2f"|format(report.summary.grand_total) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-info h-100">
+            <div class="card-body">
+                <div class="small">Tax Total</div>
+                <div class="fs-3 fw-bold">₹{{ "%.2f"|format(report.summary.tax_total) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning h-100">
+            <div class="card-body">
+                <div class="small">Balance</div>
+                <div class="fs-3 fw-bold">₹{{ "%.2f"|format(report.summary.balance_total) }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <strong>{{ report.period_label }} - {{ report.owner_label }}</strong>
+            <div class="small text-muted">
+                {{ report.start_date.strftime('%d %b %Y') }} to {{ report.end_date.strftime('%d %b %Y') }}
+            </div>
+        </div>
+        <a href="{{ url_for('main.reports_pdf', month=report.month, year=report.year, owner_id=report.selected_owner.id if report.selected_owner else '') }}" class="btn btn-outline-success btn-sm">
+            Download PDF
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Amount Without GST</th>
+                    <th>Tax</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report.report_rows %}
+                {% set invoice = row.invoice %}
+                <tr>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ invoice.customer.name }}</td>
+                    <td>₹{{ "%.2f"|format(invoice.subtotal_amount or 0) }}</td>
+                    <td>{{ row.tax_display }}</td>
+                    <td>₹{{ "%.2f"|format(invoice.grand_total or 0) }}</td>
+                    <td>
+                        <span class="badge {{ 'bg-success' if invoice.status == 'Paid' else 'bg-warning text-dark' if invoice.status == 'Pending' else 'bg-secondary' }}">
+                            {{ invoice.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        No invoices found for {{ report.period_label }}.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <th colspan="3" class="text-end">Total</th>
+                    <th>₹{{ "%.2f"|format(report.summary.subtotal_total) }}</th>
+                    <th>₹{{ "%.2f"|format(report.summary.tax_total) }}</th>
+                    <th>₹{{ "%.2f"|format(report.summary.grand_total) }}</th>
+                    <th>{{ report.summary.invoice_count }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Select a month and year above, then click <strong>Generate Report</strong> to load the monthly report.
+</div>
+{% endif %}
+{% endblock %}

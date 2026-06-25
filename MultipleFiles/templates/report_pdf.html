@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monthly Report {{ period_label }} {{ owner_label }}</title>
+    <style>
+        .report-title {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .report-period {
+            text-align: left;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .report-meta {
+            text-align: left;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 16px 0 18px;
+        }
+
+        .summary-card {
+            border: 1px solid #222;
+            padding: 8px;
+            min-height: 74px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .report-table th,
+        .report-table td {
+            font-size: 12px;
+            padding: 4px 6px;
+            border: 1px solid #222;
+        }
+
+        .report-table thead th {
+            text-align: center;
+        }
+
+        .report-table tfoot th {
+            font-size: 13px;
+        }
+
+        .footer-note {
+            margin-top: 14px;
+            font-size: 12px;
+            font-style: italic;
+            text-align: right;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <section class="invoice-print">
+        <div class="invoice-paper">
+            <div class="report-title">Monthly Sales Report</div>
+            <div class="report-period">{{ period_label }} - {{ owner_label }}</div>
+            <div class="report-meta">Period: {{ start_date.strftime('%d %b %Y') }} to {{ end_date.strftime('%d %b %Y') }}</div>
+            <div class="report-meta">Owner: {{ owner_label }}</div>
+            <div class="report-meta">Amount values are shown without GST.</div>
+            <div class="report-meta" style="margin-bottom: 14px;">&nbsp;</div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-label">Invoices</div>
+                    <div class="summary-value">{{ summary.invoice_count }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Subtotal</div>
+                    <div class="summary-value">₹{{ "%.2f"|format(summary.subtotal_total) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Tax</div>
+                    <div class="summary-value">₹{{ "%.2f"|format(summary.tax_total) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Grand Total</div>
+                    <div class="summary-value">₹{{ "%.2f"|format(summary.grand_total) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Paid</div>
+                    <div class="summary-value">₹{{ "%.2f"|format(summary.paid_total) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Balance</div>
+                    <div class="summary-value">₹{{ "%.2f"|format(summary.balance_total) }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">First Date</div>
+                    <div class="summary-value">{{ start_date.strftime('%d-%b-%Y') }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Last Date</div>
+                    <div class="summary-value">{{ end_date.strftime('%d-%b-%Y') }}</div>
+                </div>
+            </div>
+
+            <table class="invoice-grid report-table">
+                <thead>
+                <tr>
+                        <th style="width: 8%;">Sl No.</th>
+                        <th style="width: 16%;">Invoice No.</th>
+                        <th style="width: 13%;">Date</th>
+                        <th style="width: 22%;">Customer</th>
+                        <th style="width: 11%;">Amount Without GST</th>
+                        <th style="width: 10%;">Tax</th>
+                        <th style="width: 20%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report_rows %}
+                    {% set invoice = row.invoice %}
+                    <tr>
+                        <td class="text-right">{{ loop.index }}</td>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.date.strftime('%d-%b-%Y') }}</td>
+                        <td>{{ invoice.customer.name }}</td>
+                        <td class="text-right">{{ '%.2f'|format(invoice.subtotal_amount or 0) }}</td>
+                        <td class="text-right">{{ row.tax_display }}</td>
+                        <td class="text-right">{{ '%.2f'|format(invoice.grand_total or 0) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No invoices found for this month.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>Total</strong></td>
+                        <td class="text-right"><strong>{{ '%.2f'|format(summary.subtotal_total) }}</strong></td>
+                        <td class="text-right"><strong>{{ '%.2f'|format(summary.tax_total) }}</strong></td>
+                        <td class="text-right"><strong>{{ '%.2f'|format(summary.grand_total) }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer-note">This report is generated from invoice records for {{ period_label }} and {{ owner_label }}.</div>
+        </div>
+    </section>
+</body>
+</html>

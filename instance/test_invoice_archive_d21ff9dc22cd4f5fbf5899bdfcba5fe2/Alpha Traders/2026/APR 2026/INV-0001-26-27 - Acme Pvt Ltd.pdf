@@ -1,0 +1,74 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 648 >>
+stream
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 40 799.89 Tm
+(GST Billing Pro - Tax Invoice) Tj
+T*
+(Invoice No: INV/0001/26-27) Tj
+T*
+(Date: 01-Apr-2026) Tj
+T*
+(Customer: Acme Pvt Ltd) Tj
+T*
+(Owner: Alpha Traders) Tj
+T*
+(PO No: PO-7788) Tj
+T*
+(Reference No & Date: REF-2026-01 / 31-Mar-2026) Tj
+T*
+(Other References: Transport Copy) Tj
+T*
+() Tj
+T*
+(Items) Tj
+T*
+(01. Consulting | HSN 9983 | Qty 2.00 | Rate 100.00 | Amt 200.00) Tj
+T*
+() Tj
+T*
+(Subtotal: Rs. 200.00) Tj
+T*
+(CGST: Rs. 18.00) Tj
+T*
+(SGST: Rs. 18.00) Tj
+T*
+(IGST: Rs. 0.00) Tj
+T*
+(Tax Total: Rs. 36.00) Tj
+T*
+(Grand Total: Rs. 236.00) Tj
+T*
+(Amount in words: Indian Rupee Two Hundred Thirty Six Only) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000189 00000 n 
+0000000321 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1020
+%%EOF

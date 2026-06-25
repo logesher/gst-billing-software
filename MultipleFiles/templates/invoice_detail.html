@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h2 class="mb-1">Invoice {{ invoice.invoice_number }}</h2>
+        <div class="text-muted">{{ invoice.customer.name }} | {{ invoice.date.strftime('%d %b %Y') }}</div>
+        {% if archive_path %}
+        <div class="small text-muted">PDF path: {{ archive_path }}</div>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Invoice</button>
+        <a href="{{ url_for('main.invoice_save_pdf', id=invoice.id) }}" class="btn btn-success btn-sm">Save PDF Copy</a>
+        <a href="{{ url_for('main.invoice_edit', id=invoice.id) }}" class="btn btn-outline-primary btn-sm">Edit Invoice</a>
+        <a href="{{ url_for('main.invoice_list') }}" class="btn btn-outline-secondary btn-sm">Back to Invoices</a>
+    </div>
+</div>
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('main.invoice_save_pdf_manual', id=invoice.id) }}" class="row g-2 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label">Manual PDF Save Path</label>
+                <input type="text" name="manual_pdf_path" class="form-control" value="{{ default_manual_pdf_path }}" placeholder="Enter folder path or full PDF file path">
+                <div class="form-text">You can enter a folder like `D:\Bills\April` or a full file path ending in `.pdf`.</div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-success w-100">Save PDF To This Path</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% include "_invoice_document.html" %}
+{% endblock %}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GST Billing Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/invoice.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { height: 100vh; width: 250px; background-color: #fff; position: fixed; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .sidebar a { display: block; padding: 15px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #eee; }
+        .sidebar a.active, .sidebar a:hover { background-color: #0d6efd; color: white; }
+        .content { margin-left: 250px; padding: 20px; }
+        .card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stat-card { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar border-end">
+    <h4 class="p-3 mb-0 text-center bg-primary text-white">GST Billing</h4>
+    <a href="{{ url_for('main.index') }}" class="active">🏠 Dashboard</a>
+    <a href="{{ url_for('main.invoice_list') }}">📋 Invoices</a>
+    <a href="{{ url_for('main.owner_list') }}">🏢 Owners</a>
+    <a href="{{ url_for('main.customer_list') }}">👥 Customers</a>
+    <a href="{{ url_for('main.products') }}">📦 Products</a>
+    <a href="{{ url_for('main.reports') }}">📊 Reports</a>
+    <a href="{{ url_for('main.logout') }}">🚪 Logout</a>
+</div>
+
+<div class="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Dashboard</h2>
+        <div>
+            <span class="badge bg-success fs-6">Welcome, {{ current_user.username }}</span>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Owner</label>
+                    <select name="owner_id" class="form-select">
+                        <option value="">All Owners</option>
+                        {% for owner in owners %}
+                        <option value="{{ owner.id }}" {{ 'selected' if selected_owner and selected_owner.id == owner.id }}>{{ owner.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-outline-primary">Apply Filter</button>
+                    {% if selected_owner %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Clear</a>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="small text-muted">Showing {{ selected_owner.name if selected_owner else 'all owners' }}</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-4 bg-primary text-white">
+                <h5>Total Invoices</h5>
+                <h3>{{ total_invoices }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-4 bg-success text-white">
+                <h5>Total Revenue</h5>
+                <h3>₹{{ "%.2f"|format(total_revenue) }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-4 bg-info text-white">
+                <h5>Total Owners</h5>
+                <h3>{{ total_owners }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-4 bg-warning text-white">
+                <h5>Total Customers</h5>
+                <h3>{{ total_customers }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card stat-card p-4 bg-secondary text-white">
+                <h5>Unpaid Invoices</h5>
+                <h3>{{ unpaid_invoices }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card stat-card p-4 bg-dark text-white">
+                <h5>Products</h5>
+                <h3>{{ total_products }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5>Recent Invoices</h5>
+                    <a href="{{ url_for('main.invoice_list') }}" class="btn btn-primary btn-sm">View All</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for invoice in recent_invoices %}
+                    <li class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ invoice.invoice_number }}</h6>
+                            <span class="badge {{ 'bg-success' if invoice.status == 'Paid' else 'bg-warning text-dark' }}">{{ invoice.status }}</span>
+                        </div>
+                        <p class="mb-1">₹{{ "%.2f"|format(invoice.grand_total) }} | {{ invoice.customer.name }} | {{ invoice.date.strftime('%d %b %Y') }}</p>
+                        <small>Owner: {{ invoice.owner.name if invoice.owner else '-' }} | GST: ₹{{ "%.2f"|format(invoice.total_tax) }}</small>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">
+                        No recent invoices. <a href="{{ url_for('main.invoice_create') }}">Create one</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6>Quick Actions</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('main.invoice_create') }}" class="list-group-item list-group-item-action">➕ New Invoice</a>
+                    <a href="{{ url_for('main.owner_list') }}" class="list-group-item list-group-item-action">🏢 Manage Owners</a>
+                    <a href="{{ url_for('main.customer_list') }}" class="list-group-item list-group-item-action">👥 Manage Customers</a>
+                    <a href="{{ url_for('main.products') }}" class="list-group-item list-group-item-action">📦 Manage Products</a>
+                    <a href="{{ url_for('main.reports') }}" class="list-group-item list-group-item-action">📊 Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
