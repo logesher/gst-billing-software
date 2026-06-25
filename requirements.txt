@@ -1,0 +1,12 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Werkzeug
+gunicorn
+weasyprint
+pandas
+openpyxl
+reportlab
+Pillow
+requests
+email-validator
